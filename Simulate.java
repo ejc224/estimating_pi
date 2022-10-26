@@ -1,14 +1,15 @@
 // updated: 10/25
 /// removed repetitive code and condensed into methods
 /// updated and added descriptive comments
-/// next: improving the read out of data to identify any errors 
+/// improved the read out of data to identify any errors
+/// next: create the graph using the txt file
+/// question: why is my estimate pi value not closer to 3.14
 
 import java.util.Random;
 import java.util.Arrays;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-
 import java.io.IOException;
 
 public class Simulate {
@@ -19,8 +20,6 @@ public class Simulate {
         int side = 2;
         Square square = new Square(side);
         int sqArea = square.getArea(side);
-        System.out.println("The area of the square is: "+sqArea);
-        System.out.println("The distance from the center of the square to the edges is: "+side/2);
         /***
          * calculating the furthest distance from the side of the square to the center of the circle
          * visually: I am creating a triangle whose longest side is from the corner of the square to the center of the square. The other two sides of the triangle are equal to side/2
@@ -28,18 +27,17 @@ public class Simulate {
         int sidesT = (side/2);
         double sqsidesT = Math.pow(sidesT, 2);
         double hypotenuse = Math.sqrt(sqsidesT+sqsidesT);
-        System.out.println("The length of the hypotenuse is: "+hypotenuse);
         /***
          * Creating two arrays: nVals and areaVals
          * nVals to hold the number of samples which increases by 10x with each increasing value
          * areaVals to hold the calculation of the area calculated
          ***/
-        int [] nVals = {100, 1000, 10000, 100000, 1000000, 10000000};
+        int [] nVals = {100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
         double [] areaVals = new double[nVals.length];
         for(int i=0; i<areaVals.length; i++){
             areaVals[i] = calculateArea(nVals[i], hypotenuse, sqArea);
         }
-        System.out.println(Arrays.toString(areaVals));
+        System.out.println("Array of estimate pi's with increasing n values: "+Arrays.toString(areaVals));
 
         /***
          * Ensuring the file is created and creating it if it is not
@@ -69,9 +67,6 @@ public class Simulate {
         try{
             if(file.createNewFile()){
                 System.out.println("File created: "+ file.getName());
-            }
-            else {
-                System.out.println("File already exists.");
             }
         } 
         catch (IOException e){
@@ -107,23 +102,25 @@ public class Simulate {
      * @return double which is the estimation of the area of a circle
      ***/
     public static double calculateArea(int n, double hypotenuse, int sqArea){
-        int inCircle100 = 0;
+        System.out.println("When n = "+ n);
+        int inCircle = 0;
         for(int i=0; i<n; i++){
             double randomNumber = generateRandomNumber(hypotenuse);
             if (randomNumber <= 1){
-                inCircle100++;
+                inCircle++;
             }
         }
+        System.out.println("\tThe amount of numbers generated that are less than or equal to 1: "+inCircle);
         /***
          * Calculating the proportion of inCircle values to outCircle values
          * area of circle / area of square = # of values <= 1 / # of total values generated
          * looking for the area of circle
          ***/
         double ndouble = (double) n;
-        double denominator100 = inCircle100/ndouble;
-        double cArea100 = (double) denominator100*sqArea;
-        return cArea100;
+        double denominator = inCircle/ndouble;
+        System.out.println("\tProportion: "+ inCircle+"/"+ndouble);
+        double cArea = (double) denominator*sqArea;
+        System.out.println("\tEstimated pi: "+ cArea);
+        return cArea;
     }
 }
-
-
