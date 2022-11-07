@@ -1,9 +1,5 @@
-// updated: 10/25
-/// removed repetitive code and condensed into methods
-/// updated and added descriptive comments
-/// improved the read out of data to identify any errors
-/// next: create the graph using the txt file
-/// question: why is my estimate pi value not closer to 3.14
+// updated: 11/7
+// approximating pi
 
 import java.util.Random;
 import java.util.Arrays;
@@ -15,18 +11,12 @@ import java.io.IOException;
 public class Simulate {
     public static void main(String[] args){
         /***
-         * creating a square with sides = 2
+         * creating a "square" with sides = 2 and assigning its radius to variable radius
          ***/
-        int side = 2;
-        Square square = new Square(side);
-        int sqArea = square.getArea(side);
-        /***
-         * calculating the furthest distance from the side of the square to the center of the circle
-         * visually: I am creating a triangle whose longest side is from the corner of the square to the center of the square. The other two sides of the triangle are equal to side/2
-         ***/
-        int sidesT = (side/2);
-        double sqsidesT = Math.pow(sidesT, 2);
-        double hypotenuse = Math.sqrt(sqsidesT+sqsidesT);
+        Circle c = new Circle(10);
+        double side = c.getSide();
+        double radius = c.getRadius();
+
         /***
          * Creating two arrays: nVals and areaVals
          * nVals to hold the number of samples which increases by 10x with each increasing value
@@ -35,7 +25,7 @@ public class Simulate {
         int [] nVals = {100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
         double [] areaVals = new double[nVals.length];
         for(int i=0; i<areaVals.length; i++){
-            areaVals[i] = calculateArea(nVals[i], hypotenuse, sqArea);
+            areaVals[i] = calculateArea(nVals[i], radius);
         }
         System.out.println("Array of estimate pi's with increasing n values: "+Arrays.toString(areaVals));
 
@@ -44,16 +34,16 @@ public class Simulate {
          * Writing the results to a csv file
          ****/
         createFile("darts.txt");
-        writeToFile(areaVals, nVals,"darts.txt");
+        writeToFile(areaVals, nVals,"darts.txt"); // rather than plotting n vs pi, plot log(n) vs pi (y-axis pi, x-axis n)
     }
     /***
-     * Method to generate the random number from 0 to the hypotenuse (max) value
+     * Method to generate a random number from the minimum to the maxiumum
      * @param max
-     * @return double
+     * @return random number of type double
      */
-    public static double generateRandomNumber(double max){
+    public static double generateRandomNumber(double min, double max){
         Random rand = new Random();
-        double randomNumber = rand.nextDouble(max); // generates a random number from 0 to 2 (unsure what the upper bound is supposed to be)
+        double randomNumber = min + rand.nextDouble(max-min);
         return randomNumber;
     }
     /***
@@ -62,7 +52,6 @@ public class Simulate {
      * @return File
      ***/
     public static File createFile(String filename) {
-        // creating file
         File file = new File(filename);
         try{
             if(file.createNewFile()){
@@ -94,32 +83,34 @@ public class Simulate {
         catch (IOException e){}
     }
     /***
-     * Method to calculate the simulate calculating the area
+     * Method to simulate calculating the area
      * Calculation: it is the proportion of data points inside the circle vs the data points inside the circle + outside the circle
      * @param n
-     * @param hypotenuse
      * @param sqArea
      * @return double which is the estimation of the area of a circle
      ***/
-    public static double calculateArea(int n, double hypotenuse, int sqArea){
+    public static double calculateArea(int n, double radius){
         System.out.println("When n = "+ n);
         int inCircle = 0;
         for(int i=0; i<n; i++){
-            double randomNumber = generateRandomNumber(hypotenuse);
-            if (randomNumber <= 1){
+            double x = generateRandomNumber(-radius, radius);
+            double y = generateRandomNumber(-radius, radius);
+            double sides = Math.pow(x, 2) + Math.pow(y, 2);
+            double hypotenuse = Math.pow(sides, 0.5);
+            if (hypotenuse <= radius){ 
                 inCircle++;
             }
         }
         System.out.println("\tThe amount of numbers generated that are less than or equal to 1: "+inCircle);
         /***
          * Calculating the proportion of inCircle values to outCircle values
-         * area of circle / area of square = # of values <= 1 / # of total values generated
-         * looking for the area of circle
+         * area of circle / area of square = nCircle / n
+         *  pi ~ 4 * nCircle/n --> (pi*radius^2)/(4*radius^2) ~ nCircle/n --> pi/4 ~ nCircle/n --> pi ~4*(nCircle/n)
          ***/
         double ndouble = (double) n;
         double denominator = inCircle/ndouble;
         System.out.println("\tProportion: "+ inCircle+"/"+ndouble);
-        double cArea = (double) denominator*sqArea;
+        double cArea = (double) denominator*(4); // because pi = (inCircle / n)*4 because the radius' cancel out
         System.out.println("\tEstimated pi: "+ cArea);
         return cArea;
     }
